@@ -25,7 +25,10 @@
     const app = new PIXI.Application({width: 800, height: 600, backgroundColor: 0x52251C});
     play_area.appendChild(app.view);
 
+    var home_screen = new PIXI.Container();
+    app.stage.addChild(home_screen) 
     var main_gallery = new PIXI.Container();
+    app.stage.addChild(main_gallery);
 
     PIXI.loader
       .add('images/spritesheets/player.png')
@@ -34,7 +37,39 @@
     var sprite;
 
     function setup(){
+
+      /************************************** Home Screen *********************************/
+      home_screen.interactive = true;
+
+      var basicText = new PIXI.Text('Êtes-vous éveillé ?');
+      basicText.interactive = true;
+      basicText.buttonMode = true;
+      basicText.anchor.set(0.5);
+      basicText.x = 400;
+      basicText.y = 300;
+
+      home_screen.addChild(basicText);
+
+      basicText.on('pointerdown', function(){
+        home_screen.visible = false;
+        main_gallery.visible = true;
+      })
+
+      /************************************** END Home Screen *********************************/      
+
+      /************************************** Gallery *********************************/
       main_gallery.interactive = true;
+      main_gallery.visible = false;
+
+      var cadre_1 = PIXI.Sprite.fromImage('images/Cadre_1.png');
+      cadre_1.interactive = true;
+      cadre_1.buttonMode = true;
+      cadre_1.anchor.set(0.5);
+      cadre_1.width  = 400;
+      cadre_1.height = 350;
+      cadre_1.x = 400;
+      cadre_1.y = 300;
+      main_gallery.addChild(cadre_1);
 
       //Create the `tileset` sprite from the texture
       var player_texture = PIXI.utils.TextureCache["images/spritesheets/player.png"];
@@ -47,23 +82,45 @@
       //Create the sprite from the texture
       var player = new PIXI.Sprite(player_texture);
 
-      //Position the rocket sprite on the canvas
+      //Position the player sprite on the canvas
       player.anchor.set(0.5);
       player.x = 50;
       player.y = 600 - player.height/2 - 32;
 
-      //Add the rocket to the stage
-      app.stage.addChild(player);
+      //Add the player to the stage
+      main_gallery.addChild(player);
   
       //Render the stage   
-      app.render(main_gallery);
+      //app.render(main_gallery);
 
 
       //Move player on cadre1 click
       cadre_1.on('pointerdown', function(){
         var player_move = setInterval(function(){
+          //If the player is already in front of the painting, we scale it
           if (player.x > 400) {
+            var cadre_1_zoom = setInterval(function(){
+              //If the frame is at chosen scale, we stop
+              if (cadre_1.scale.x >= 0.8 && cadre_1.scale.y >= 0.8) {
+                player.alpha = 0;
+                clearInterval(cadre_1_zoom);
+              //Else we scale it a bit  
+              } else {
+                cadre_1.scale.x *= 1.01;
+                cadre_1.scale.y *= 1.01;
+                player.y -= 7; 
+                if (player.y > 400) {
+                    player.alpha -= 0.05;    
+                } else {
+                  player.rotation += 0.5;
+                  player.scale.x -= 0.05;
+                  player.scale.y -= 0.05;
+                }
+              }
+            }, 100 );
+
             clearInterval(player_move);
+          //Else we move the player  
           } else {
             player.x += 10;
             if (player_rectangle.y >= 128*3){
@@ -79,7 +136,7 @@
         }, 200);
         
       });
-
+      /***************************END Gallery*********************************************************/
 
     }
 

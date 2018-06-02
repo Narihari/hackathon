@@ -1,10 +1,1 @@
 const log = console.log;
-var cadre_1 = PIXI.Sprite.fromImage('images/Cadre_1.png');
-cadre_1.interactive = true;
-cadre_1.buttonMode = true;
-cadre_1.anchor.set(0.5);
-cadre_1.width  = 400;
-cadre_1.height = 350;
-cadre_1.x = 400;
-cadre_1.y = 300;
-app.stage.addChild(cadre_1);
