@@ -5,15 +5,20 @@
   <title>Hello World</title>
 </head>
   <script src="pixi.js"></script>
-<body>
+<body style="margin: 0;">
+  <div style="display:flex;justify-content:center;align-items:center;width:100vw;height:100vh;">
+    <div id="play_area" style="width:800px;height:600px;"></div>
+  </div> 
   <script type="text/javascript">
     let type = "WebGL"
     if(!PIXI.utils.isWebGLSupported()){
       type = "canvas"
     }
 
-    const app = new PIXI.Application();
-    document.body.appendChild(app.view);
+    var play_area = document.getElementById('play_area');
+
+    const app = new PIXI.Application({width: 800, height: 600});
+    play_area.appendChild(app.view);
   </script>
 </body>
 </html>
