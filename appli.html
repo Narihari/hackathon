@@ -21,13 +21,14 @@
 
     var play_area = document.getElementById('play_area');
 
+    //Define the canvas area
     const app = new PIXI.Application({width: 800, height: 600, backgroundColor: 0x52251C});
     play_area.appendChild(app.view);
 
     var main_gallery = new PIXI.Container();
 
     PIXI.loader
-      .add('images/spritesheets/character.png')
+      .add('images/spritesheets/player.png')
       .load(setup);
 
     var sprite;
@@ -36,29 +37,58 @@
       main_gallery.interactive = true;
 
       //Create the `tileset` sprite from the texture
-      let player_texture = PIXI.utils.TextureCache["images/spritesheets/character.png"];
+      var player_texture = PIXI.utils.TextureCache["images/spritesheets/player.png"];
 
-      let player_rectangle = new PIXI.Rectangle(0, 0, 128, 128);
+      var player_rectangle = new PIXI.Rectangle(128, 128, 128, 128);
 
       //Tell the texture to use that rectangular section
       player_texture.frame = player_rectangle;
 
       //Create the sprite from the texture
-      let player = new PIXI.Sprite(player_texture);
+      var player = new PIXI.Sprite(player_texture);
 
       //Position the rocket sprite on the canvas
-      player.x = 32;
-      player.y = 600 - player.height - 32;
+      player.anchor.set(0.5);
+      player.x = 50;
+      player.y = 600 - player.height/2 - 32;
 
       //Add the rocket to the stage
       app.stage.addChild(player);
   
       //Render the stage   
       app.render(main_gallery);
-    }    
+
+
+      //Move player on cadre1 click
+      cadre_1.on('pointerdown', function(){
+        var player_move = setInterval(function(){
+          if (player.x > 400) {
+            clearInterval(player_move);
+          } else {
+            player.x += 10;
+            if (player_rectangle.y >= 128*3){
+              player_rectangle.y = 0
+            } else {
+              player_rectangle.y += 128;
+            }
+            player.texture.frame = player_rectangle;
+            app.render(main_gallery);
+          }
+           
+            
+        }, 200);
+        
+      });
+
+
+    }
+
+    
+
       
   </script>
  <script src="pixiscript.js"></script>
+ <script src="player_move.js"></script>
  
 </body>
 </html>
