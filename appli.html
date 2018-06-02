@@ -2,16 +2,16 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Hello World</title>
+  <title>Rêves et Cauchemards </title>
   <link rel="stylesheet" type="text/css" href="pixi.css">
 </head>
-  <script src="pixi.js"></script>
-<body style="margin: 0;">
   <div id="content">
     <div id="play_area"></div>
-  </div> 
+  </div>
   <body>
+  <script src="pixi.js"></script>
   <script type="text/javascript">
+
     let type = "WebGL"
     if(!PIXI.utils.isWebGLSupported()){
       type = "canvas"
@@ -22,5 +22,6 @@
     const app = new PIXI.Application({width: 800, height: 600});
     play_area.appendChild(app.view);
   </script>
+  <script src="pixiscript.js"></script>
 </body>
 </html>
