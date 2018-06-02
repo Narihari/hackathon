@@ -1,5 +1,4 @@
 const log = console.log;
-document.body.appendChild(app.view);
 const button = PIXI.Sprite.fromImage('images/sprites/image.png');
 button.interactive = true;
 button.buttonMode = true;
