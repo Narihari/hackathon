@@ -68,19 +68,21 @@
 
       //Cadres definition
       var cadres = [];
-
-        var cadre_1 = PIXI.Sprite.fromImage('images/Cadre_1.png');
+      for (var i = 1; i <= 2; i++) {
+        let cadre_1 = PIXI.Sprite.fromImage('images/Cadre_1.png');
         cadre_1.interactive = true;
         cadre_1.buttonMode = true;
         cadre_1.anchor.set(0.5);
         cadre_1.width  = 400;
         cadre_1.height = 350;
-        cadre_1.x = 400;
+        cadre_1.x = 400 + (i-1)*800;
         cadre_1.y = 300;
 
         cadres.push(cadre_1);
         log(cadres);
         main_gallery.addChild(cadre_1);
+      }
+        
       
       
 
@@ -170,7 +172,10 @@
               }
               player.texture.frame = player_rectangle;
 
-              cadres[current_cadre].x -= 20;
+              cadres.forEach(function(cadre){
+                cadre.x -= 20; 
+              });
+              
             }               
           }, 200);
       });
