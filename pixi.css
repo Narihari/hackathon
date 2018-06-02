@@ -2,3 +2,16 @@ body{
 	margin: 0;
 	padding: 0;
 }
+
+#content{
+	display:flex;
+	justify-content:center;
+	align-items:center;
+	width:100vw;
+	height:100vh;
+}
+
+#play_area{
+	width:800px;
+	height:600px;
+}
