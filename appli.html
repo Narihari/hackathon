@@ -23,6 +23,39 @@
 
     const app = new PIXI.Application({width: 800, height: 600});
     play_area.appendChild(app.view);
+
+    var main_gallery = new PIXI.Container();
+
+    PIXI.loader
+      .add('images/spritesheets/character.png')
+      .load(setup);
+
+    var sprite;
+
+    function setup(){
+      main_gallery.interactive = true;
+
+      //Create the `tileset` sprite from the texture
+      let player_texture = PIXI.utils.TextureCache["images/spritesheets/character.png"];
+
+      let player_rectangle = new PIXI.Rectangle(0, 0, 128, 128);
+
+      //Tell the texture to use that rectangular section
+      player_texture.frame = player_rectangle;
+
+      //Create the sprite from the texture
+      let player = new PIXI.Sprite(player_texture);
+
+      //Position the rocket sprite on the canvas
+      player.x = 32;
+      player.y = 600 - player.height - 32;
+
+      //Add the rocket to the stage
+      app.stage.addChild(player);
+  
+      //Render the stage   
+      app.render(main_gallery);
+    }    
       
   </script>
  <script src="pixiscript.js"></script>
