@@ -64,11 +64,12 @@
       main_gallery.interactive = true;
       main_gallery.visible = false;
 
-      current_cadre = 0;
+      var current_cadre = 0;
+      var max_number_of_cadres = 3;
 
       //Cadres definition
       var cadres = [];
-      for (var i = 1; i <= 2; i++) {
+      for (var i = 1; i <= max_number_of_cadres; i++) {
         let cadre_1 = PIXI.Sprite.fromImage('images/Cadre_1.png');
         cadre_1.interactive = true;
         cadre_1.buttonMode = true;
@@ -79,7 +80,6 @@
         cadre_1.y = 300;
 
         cadres.push(cadre_1);
-        log(cadres);
         main_gallery.addChild(cadre_1);
       }
         
@@ -92,7 +92,7 @@
       player_texture.frame = player_rectangle;
       var player = new PIXI.Sprite(player_texture);
       player.anchor.set(0.5);
-      player.x = 50;
+      player.x = 100;
       player.y = 600 - player.height/2 - 32;
 
       main_gallery.addChild(player);
@@ -101,12 +101,23 @@
       var next_screen_teleport = new PIXI.Sprite(player_texture); //This placeholder and needs to be edited
       next_screen_teleport.interactive = true;
       next_screen_teleport.buttonMode = true;
-      next_screen_teleport.tint = 0xff0000;
+      next_screen_teleport.tint = 0x00ff00;
       next_screen_teleport.anchor.set(0.5);
       next_screen_teleport.x = 750;
       next_screen_teleport.y = 600 - next_screen_teleport.height/2 - 32;
 
       main_gallery.addChild(next_screen_teleport);
+
+      //Previous Screen Teleport
+      var previous_screen_teleport = new PIXI.Sprite(player_texture); //NEEDS TO CHANGE
+      previous_screen_teleport.interactive = true;
+      previous_screen_teleport.buttonMode = true;
+      previous_screen_teleport.tint = 0xff0000;
+      previous_screen_teleport.anchor.set(0.5);
+      previous_screen_teleport.x = 20;
+      previous_screen_teleport.y = 600 - previous_screen_teleport.height/2 - 32;
+
+      main_gallery.addChild(previous_screen_teleport);
 
       /*-----------Functions ------------*/
 
@@ -155,7 +166,7 @@
       
 
 
-      //Move player to teleport
+      //Move player forward to teleport
       next_screen_teleport.on('pointerdown', function(){
         if (typeof cadres[current_cadre] == 'undefined') { return;}
           var player_to_teleport = setInterval(function(){
@@ -178,6 +189,33 @@
               
             }               
           }, 200);
+      });
+
+      //Move player backwards on teleport
+      previous_screen_teleport.on('pointerdown', function(){
+        
+        if (current_cadre == 0) {return;}
+
+        var player_to_teleport_backwards = setInterval(function(){
+          if (cadres[current_cadre -1].x >= 400) {
+            current_cadre -= 1;
+
+            clearInterval(player_to_teleport_backwards);
+          } else {
+            //animate player
+            player_rectangle.x = 0;
+            if (player_rectangle.y >= 128*3){
+                player_rectangle.y = 0
+            } else {
+              player_rectangle.y += 128;
+            }
+            player.texture.frame = player_rectangle;
+
+            cadres.forEach(function(cadre){                
+              cadre.x += 20; 
+            });
+          }
+        }, 200);
       });
       /***************************END Gallery*********************************************************/
 
