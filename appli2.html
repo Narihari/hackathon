@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Tableau premier</title>
+</head>
+  <script src="pixi.js"></script>
+<body>
+  <script type="text/javascript">
+  
+  function resolution(x,y){
+	
+	if(x>=383 && x<=394 && y>=188 && y<=200)
+	{
+		alert("trouvé !!!");
+	}
+
+  }
+  
+  let app = new PIXI.Application({ 
+    width: 2000, 
+    height: 1000,                       
+    antialias: true, 
+    transparent: false, 
+    resolution: 1
+  }
+);
+
+document.body.appendChild(app.view);
+
+PIXI.loader
+  .add("images/tableaux/tableau_1.png")
+  .add("images/tableaux/fakeMenu2.png")
+  .add("images/spritesheets/marteau.png")
+  .add("images/spritesheets/pelle.png")
+  .add("images/spritesheets/pioche.png")
+  .load(setup);
+
+//This `setup` function will run when the image has loaded
+function setup() {
+
+  //Create the cat sprite
+  let cat = new PIXI.Sprite(PIXI.loader.resources["images/tableaux/tableau_1.png"].texture);
+  let menu = new PIXI.Sprite(PIXI.loader.resources["images/tableaux/fakeMenu2.png"].texture);
+  
+  let marteau = new PIXI.Sprite(PIXI.loader.resources["images/spritesheets/marteau.png"].texture);
+  let pelle = new PIXI.Sprite(PIXI.loader.resources["images/spritesheets/pelle.png"].texture);
+  let pioche = new PIXI.Sprite(PIXI.loader.resources["images/spritesheets/pioche.png"].texture);
+  
+cat.interactive = true;
+  
+marteau.interactive = true;
+marteau.buttonMode = true;
+
+pelle.interactive = true;
+pelle.buttonMode = true;
+
+pioche.interactive = true;
+pioche.buttonMode = true;
+  
+  menu.x=0;
+  menu.y=640;
+  
+  marteau.x=100;
+  marteau.y=650;
+  
+  pelle.x=200;
+  pelle.y=650;
+  
+  pioche.x=300;
+  pioche.y=650;
+  
+  //Add the cat to the stage
+  app.stage.addChild(cat);
+  app.stage.addChild(menu);
+  
+  app.stage.addChild(marteau);
+  app.stage.addChild(pelle);
+  app.stage.addChild(pioche);
+  
+  marteau.on('click', function(event) {
+	alert("robert");
+});
+
+  pelle.on('click', function(event) {
+	alert("gerrard");
+});
+
+  pioche.on('click', function(event) {
+	alert("André");
+});
+
+  cat.on('click', function(event) {
+	alert(app.renderer.plugins.interaction.mouse.global.x +" "+ app.renderer.plugins.interaction.mouse.global.y);
+	abs=app.renderer.plugins.interaction.mouse.global.x;
+	ord=app.renderer.plugins.interaction.mouse.global.y;
+	/*alert(renderer.plugins.interaction.mouse.global.y);*/
+	resolution(abs,ord);
+});
+
+}
+	
+	var choixActuel = 1;
+	var premierSequence = [5,6,7];
+	
+	if(choixActuel==1)
+	{
+		/*alert(premierSequence[0]);*/
+	}
+	
+  </script>
+</body>
+</html>

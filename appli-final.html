@@ -1,0 +1,798 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Rêves et Cauchemards </title>
+  <link rel="stylesheet" type="text/css" href="pixi.css">
+</head>
+<body>
+  <div id="content">
+  <div id="play_area"></div>
+  </div>
+      
+  <script src="pixi.js"></script>
+      
+  <script type="text/javascript">
+
+    let type = "WebGL"
+    if(!PIXI.utils.isWebGLSupported()){
+      type = "canvas"
+    }
+
+    var play_area = document.getElementById('play_area');
+
+    //Define the canvas area
+    const app = new PIXI.Application({width: 800, height: 600, backgroundColor: 0x52251C});
+    play_area.appendChild(app.view);
+
+    var home_screen = new PIXI.Container();
+    app.stage.addChild(home_screen) 
+    var main_gallery = new PIXI.Container();
+    app.stage.addChild(main_gallery);
+    var tableau_1 = new PIXI.Container();
+    app.stage.addChild(tableau_1);
+
+    PIXI.loader
+      .add('images/spritesheets/player.png')
+      .add("images/tableaux/tableau_1_recadr.png")
+      .add("images/tableaux/tableau_2_recadr.png")
+      .add("images/tableaux/tableau_3_recadr.png")
+      .add("images/tableaux/tableau_4_recadr.png")
+      .add("images/tableaux/tableau_5_recadr.png")
+      .add("images/tableaux/tableau_6_recadr.png")
+      .add("images/tableauxPNG/EndGameScreen.png")
+      .add("images/tableaux/fakeMenu2.png")
+      .add("images/spritesheets/marteau.png")
+      .add("images/spritesheets/pelle.png")
+      .add("images/spritesheets/back_arrow.png")
+      .add('images/spritesheets/end_door.png')
+      .add("images/spritesheets/pioche.png")
+  .add("images/spritesheets/brique.png")
+  .add("images/spritesheets/parchemin1.png")
+      .load(setup);
+
+    var sprite;
+
+    function setup(){
+
+      var dropX=0;
+      var dropY=0;
+      var item_pioche = 0;
+      var item_parchemin = 0;
+      var brique_trouve = 0;
+      var outil = "";
+
+      /************************************** Home Screen *********************************/
+     
+      home_screen.interactive = true;
+
+      //Title Definition
+      var basicText = new PIXI.Text('Êtes-vous éveillé ?');
+      basicText.interactive = true;
+      basicText.buttonMode = true;
+      basicText.anchor.set(0.5);
+      basicText.x = 400;
+      basicText.y = 300;
+
+      home_screen.addChild(basicText);
+
+      /*-------------Functions ------------*/
+      basicText.on('pointerdown', function(){
+        home_screen.visible = false;
+        main_gallery.visible = true;
+      })
+
+      /************************************** END Home Screen *********************************/      
+
+      /************************************** Gallery *********************************/
+      main_gallery.interactive = true;
+      main_gallery.visible = false;
+
+      var current_cadre = 0;
+      var max_number_of_cadres = 6;
+
+      var content_tab = {
+        1 : {'height' : 364, 'width' : 507},                  
+        2 : {'height' : 364, 'width' : 360},                 
+        3 : {'height' : 364, 'width' : 660},                 
+        4 : {'height' : 508, 'width' : 280},                 
+        5 : {'height' : 364, 'width' : 507},                 
+        6 : {'height' : 364, 'width' : 660}               
+      };        
+      //Cadres definition       
+      var cadres = [];       
+      for (var i = 1; i <= max_number_of_cadres; i++) {         
+        let cadre_1 = PIXI.Sprite.fromImage('images/tableauxPNG/tableau_'+i+'.png');         
+        cadre_1.interactive = true;         
+        cadre_1.buttonMode = true;         
+        cadre_1.anchor.set(0.5);         
+        cadre_1.width  = content_tab[i + ''].width;         
+        cadre_1.height = content_tab[i + ''].height;         
+        cadre_1.x = 400 + (i-1)*800;         
+        cadre_1.y = 300;          
+        cadres.push(cadre_1);         
+        main_gallery.addChild(cadre_1);       
+      }
+        
+      //End Game Door Definition
+      var end_door = PIXI.Sprite.fromImage('images/spritesheets/end_door.png');
+      end_door.interactive = true;
+      end_door.buttonMode = true;
+      end_door.anchor.set(0.5);
+      end_door.x = 5400;
+      end_door.y = 600 - (end_door.height / 2) - 32 ;
+
+      main_gallery.addChild(end_door);
+      
+
+      //Player Definition
+      var player_texture = PIXI.utils.TextureCache["images/spritesheets/player.png"];
+      var player_rectangle = new PIXI.Rectangle(128, 128, 128, 128);
+      player_texture.frame = player_rectangle;
+      var player = new PIXI.Sprite(player_texture);
+      player.anchor.set(0.5);
+      player.x = 200;
+      player.y = 504;
+
+      main_gallery.addChild(player);
+
+      var arrow_texture = PIXI.utils.TextureCache["images/spritesheets/back_arrow.png"]
+
+       //Next Screen Teleport
+      var next_screen_teleport = new PIXI.Sprite(arrow_texture);
+      next_screen_teleport.interactive = true;
+      next_screen_teleport.buttonMode = true;
+      next_screen_teleport.anchor.set(0.5);
+      next_screen_teleport.width = 100;
+      next_screen_teleport.height = 75;
+      next_screen_teleport.pivot.set(next_screen_teleport.width/2,next_screen_teleport.height/2);
+      next_screen_teleport.rotation = 3.14;
+      next_screen_teleport.x = 720 ;
+      next_screen_teleport.y = 530 ;
+
+      main_gallery.addChild(next_screen_teleport);
+
+      //Previous Screen Teleport
+      var previous_screen_teleport = new PIXI.Sprite(arrow_texture);
+      previous_screen_teleport.interactive = true;
+      previous_screen_teleport.buttonMode = true;
+      previous_screen_teleport.anchor.set(0.5);
+      previous_screen_teleport.x = 60;
+      previous_screen_teleport.y = 555;
+      previous_screen_teleport.width = 100;
+      previous_screen_teleport.height = 75;
+
+      main_gallery.addChild(previous_screen_teleport);
+
+      /*-----------Functions ------------*/
+
+      //Move player on cadre1 click
+      cadres.forEach(function(cadre){
+
+          cadre.on('pointerdown', function(){
+          var player_move_to_cadre = setInterval(function(){
+            //If the player is already in front of the painting, we scale it
+            if (player.x > 400) {
+              var cadre_1_zoom = setInterval(function(){
+                //If the frame is at chosen scale, we stop
+                if (cadre.scale.x >= 0.8 && cadre.scale.y >= 0.8) {
+                  player.alpha = 0;
+                  moveToTableau(current_cadre + 1);
+                  clearInterval(cadre_1_zoom);
+                //Else we scale it a bit  
+                } else {
+                  cadre.scale.x *= 1.01;
+                  cadre.scale.y *= 1.01;
+                  player.y -= 7; 
+                  if (player.y > 400) {
+                      player.alpha -= 0.05;    
+                  } else {
+                    player.rotation += 0.5;
+                    player.scale.x -= 0.05;
+                    player.scale.y -= 0.05;
+                  }
+                }
+              }, 100 );
+
+              clearInterval(player_move_to_cadre);
+            //Else we move the player  
+            } else {
+              player.x += 10;
+              if (player_rectangle.y >= 128*3){
+                player_rectangle.y = 0
+              } else {
+                player_rectangle.y += 128;
+              }
+              player.texture.frame = player_rectangle;
+            }               
+          }, 200);
+          
+        });
+      });
+      
+
+
+      //Move player forward to teleport
+      next_screen_teleport.on('pointerdown', function(){
+        if (typeof cadres[current_cadre] == 'undefined') { return;}
+          var player_to_teleport = setInterval(function(){
+            if (cadres[current_cadre].x <= -400 ) {
+              current_cadre += 1;
+
+              clearInterval(player_to_teleport);
+            } else {
+              //animate player
+              player_rectangle.x = 128;
+              if (player_rectangle.y >= 128*3){
+                player_rectangle.y = 0
+              } else {
+                player_rectangle.y += 128;
+              }
+              player.texture.frame = player_rectangle;
+
+              cadres.forEach(function(cadre){
+                cadre.x -= 20; 
+              });
+              end_door.x -= 20;
+              
+            }               
+          }, 200);
+      });
+
+      //Move player backwards on teleport
+      previous_screen_teleport.on('pointerdown', function(){
+        
+        if (current_cadre == 0) {return;}
+
+        var player_to_teleport_backwards = setInterval(function(){
+          if (cadres[current_cadre -1].x >= 400) {
+            current_cadre -= 1;
+
+            clearInterval(player_to_teleport_backwards);
+          } else {
+            //animate player
+            player_rectangle.x = 0;
+            if (player_rectangle.y >= 128*3){
+                player_rectangle.y = 0
+            } else {
+              player_rectangle.y += 128;
+            }
+            player.texture.frame = player_rectangle;
+
+            cadres.forEach(function(cadre){                
+              cadre.x += 20; 
+            });
+
+          }
+        }, 200);
+      });
+
+      function moveToTableau(tableau_id) {
+        main_gallery.visible = false;
+        switch (tableau_id){
+          case 1: 
+            tableau_1.visible = true; 
+            break;
+          case 2: 
+            tableau_2.visible = true; 
+            break;
+          case 3: 
+            tableau_3.visible = true; 
+            break;
+          case 4: 
+            tableau_4.visible = true; 
+            break;
+          case 5: 
+            tableau_5.visible = true; 
+            break;
+          case 6: 
+            tableau_6.visible = true; 
+            break;          
+          default:
+            log('tableau_' + tableau_id + ' clicked');
+            break;  
+
+        }
+      }
+
+      end_door.on('pointerdown', function(){
+          var player_move_to_cadre = setInterval(function(){
+            //If the player is already in front of the painting, we scale it
+            if (player.x > 600) {
+              main_gallery.visible = false;
+              end_game_screen.visible = true;
+              clearInterval(player_move_to_cadre);
+            //Else we move the player  
+            } else {
+              player.x += 10;
+              if (player_rectangle.y >= 128*3){
+                player_rectangle.y = 0
+              } else {
+                player_rectangle.y += 128;
+              }
+              player.texture.frame = player_rectangle;
+            }               
+          }, 200);
+          
+        });
+      
+      /***************************END Gallery*********************************************************/
+
+      
+
+      /*************************** Tableau_1*********************************************************/
+      tableau_1.interactive = true;
+      tableau_1.visible = false;
+
+      //Create the cat sprite
+      let cat = new PIXI.Sprite(PIXI.loader.resources["images/tableaux/tableau_1_recadr.png"].texture);
+      let menu = new PIXI.Sprite(PIXI.loader.resources["images/tableaux/fakeMenu2.png"].texture);
+    
+      let marteau = new PIXI.Sprite(PIXI.loader.resources["images/spritesheets/marteau.png"].texture);
+      let pelle = new PIXI.Sprite(PIXI.loader.resources["images/spritesheets/pelle.png"].texture);
+      let pioche = new PIXI.Sprite(PIXI.loader.resources["images/spritesheets/pioche.png"].texture);
+  let brique = new PIXI.Sprite(PIXI.loader.resources["images/spritesheets/brique.png"].texture);
+  let parchemin1 = new PIXI.Sprite(PIXI.loader.resources["images/spritesheets/parchemin1.png"].texture);
+      let barrow_1 = new PIXI.Sprite(PIXI.loader.resources["images/spritesheets/back_arrow.png"].texture);
+
+      var style = new PIXI.TextStyle({
+    fill: ['#ffffff']});
+  var textParchemin1 = new PIXI.Text('Vous trouvez un bout de parchemin.', style);
+      textParchemin1.interactive = true;
+      textParchemin1.buttonMode = false;
+      textParchemin1.alpha = 0;
+      textParchemin1.anchor.set(0.5);
+      textParchemin1.x = 400;
+      textParchemin1.y = 300;
+  var pioche_trouve = new PIXI.Text('Vous trouvez une pioche.', style);
+      pioche_trouve.interactive = true;
+      pioche_trouve.buttonMode = false;
+      pioche_trouve.alpha = 0;
+      pioche_trouve.anchor.set(0.5);
+      pioche_trouve.x = 400;
+      pioche_trouve.y = 265;
+  var nothing_here = new PIXI.Text('Il n\'y a plus rien ici.', style);
+      nothing_here.interactive = true;
+      nothing_here.buttonMode = false;
+      nothing_here.alpha = 0;
+      nothing_here.anchor.set(0.5);
+      nothing_here.x = 400;
+      nothing_here.y = 300;
+
+      //Create the cat sprite
+  
+  
+
+  
+cat.interactive = true;
+menu.interactive = true;
+  
+pioche.interactive = false;
+pioche.buttonMode = true;
+pioche.alpha = 0;
+brique.interactive = false;
+brique.buttonMode = true;
+brique.alpha = 0;
+parchemin1.interactive = false;
+parchemin1.buttonMode = true;
+parchemin1.alpha = 0;
+
+function selection(x,y)
+  {
+    if(x>=100 && x<=164 && y>=525 && y<=589)
+    {
+
+        outil="Pioche";
+    }
+    if(x>=200 && x<=264 && y>=525 && y<=589)
+    {
+        outil="Brique";
+    }
+  }
+
+  function resolution(x,y){
+  
+  if(x>=413 && x<=439 && y>=221 && y<=243)
+  {
+    /*alert("trouvé !!!");*/
+  }
+
+// Parchemin
+   if(x>=660 && x<=679 && y>=101 && y<=118 && item_parchemin == 0)
+  {
+    parchemin1.alpha = 1;
+    parchemin1.interactive = true;
+    item_parchemin++;
+    parchemin1.x = 200;
+    parchemin1.y = 525;
+    textParchemin1.alpha = 1;
+    setTimeout(function(){ textParchemin1.alpha = 0; }, 3000);
+    
+  }
+
+// Pioche & Coup de pioche
+  if(x>=157 && x<=183 && y>=319 && y<=365 && item_pioche == 0)
+  {
+    pioche.x = 100;
+    pioche.y = 525;
+    pioche.alpha = 1;
+    pioche.interactive = true;
+    item_pioche++;
+    pioche_trouve.alpha = 1;
+    setTimeout(function(){ pioche_trouve.alpha = 0; }, 3000);
+  }
+
+  if(x>=157 && x<=183 && y>=319 && y<=365 && item_pioche == 1){
+    nothing_here.alpha = 1;
+    setTimeout(function(){ nothing_here.alpha = 0; }, 3000);
+  } 
+
+// Zoom sur la tour
+  if(x>=508 && x<=597 && y>=143 && y<=293)
+  {
+    // ZOOM
+  }
+
+}
+  
+  function collision(x,y)
+  {
+  if(x>=8 && x<=91 && y>=273 && y<=357 && brique_trouve == 0 && outil=="Pioche")
+  {
+    brique.x = 300;
+    brique.y = 525;
+    brique.alpha = 1;
+    brique_trouve++;
+    brique.interactive = true;
+  }
+}
+
+function onDragStart(event)
+{
+    // store a reference to the data
+    // the reason for this is because of multitouch
+    // we want to track the movement of this particular touch
+    this.data = event.data;
+    this.alpha = 0.5;
+    this.dragging = true;
+    selection(app.renderer.plugins.interaction.mouse.global.x,app.renderer.plugins.interaction.mouse.global.y);
+}
+
+function onDragEnd()
+{
+
+  /*alert(this.position.x-100);
+  alert(this.position.y-100);*/
+  
+  /*collision(this.position.x,this.position.y);*/
+  
+  collision(dropX,dropY);
+    
+    this.alpha = 1;
+
+    this.dragging = false;
+
+    // set the interaction data to null
+    this.data = null;
+  
+  dropX=0;
+  dropY=0;
+  
+  pioche.x=100;
+  pioche.y=525;
+
+}
+
+function onDragMove()
+{
+    if (this.dragging)
+    {
+        var newPosition = this.data.getLocalPosition(this.parent);
+        this.position.x = newPosition.x;
+        this.position.y = newPosition.y;
+    
+    dropX=this.position.x;
+    dropY=this.position.y;
+    
+    }
+}
+  pioche.on('mousedown', onDragStart)
+        .on('touchstart', onDragStart)
+        // events for drag end
+        .on('mouseup', onDragEnd)
+        .on('mouseupoutside', onDragEnd)
+        .on('touchend', onDragEnd)
+        .on('touchendoutside', onDragEnd)
+        // events for drag move
+        .on('mousemove', onDragMove)
+        .on('touchmove', onDragMove);
+
+  cat.height=515;
+  cat.width=800;
+  
+  menu.x=0;
+  menu.y=515;
+  
+  pioche.x=100;
+  pioche.y=525;
+  
+  //Add the cat to the stage
+  tableau_1.addChild(cat);
+  tableau_1.addChild(menu);
+  
+  tableau_1.addChild(pioche);
+  tableau_1.addChild(brique);
+  tableau_1.addChild(parchemin1);
+  tableau_1.addChild(textParchemin1);
+  tableau_1.addChild(pioche_trouve);
+  tableau_1.addChild(nothing_here);
+  
+ /* menu.on('click', function(event) {
+  alert(app.renderer.plugins.interaction.mouse.global.x +" "+ app.renderer.plugins.interaction.mouse.global.y);
+});*/
+
+  cat.on('click', function(event) {
+  /*alert(app.renderer.plugins.interaction.mouse.global.x +" "+ app.renderer.plugins.interaction.mouse.global.y);*/
+  abs=app.renderer.plugins.interaction.mouse.global.x;
+  ord=app.renderer.plugins.interaction.mouse.global.y;
+  /*alert(renderer.plugins.interaction.mouse.global.y);*/
+  resolution(abs,ord);
+});
+
+
+
+////////Old CODE
+
+      barrow_1.interactive = true;
+      barrow_1.buttonMode = true;
+      barrow_1.x = 670 ;
+      barrow_1.y = 520 ;
+      barrow_1.width = 100;
+      barrow_1.height = 75;
+        
+      //Add the cat to the stage
+      tableau_1.addChild(barrow_1);
+
+      function back1(){
+        tableau_1.visible = false;
+        main_gallery.visible = true;
+        player.x = 200;
+        player.y = 504;
+        player.alpha = 1;
+        player.rotation = 0;
+        player.scale.x = 1;
+        player.scale.y = 1;
+        cadres[0].scale.x = 0.7;
+        cadres[0].scale.y = 0.7;
+
+      }
+
+      barrow_1.on('click', function(event) {
+        back1();
+      });
+
+      /***************************END Tableau_1*********************************************************/
+
+      /***************************** Tableau 2 *************************************/
+
+      var tableau_2 = new PIXI.Container();
+      app.stage.addChild(tableau_2);
+
+      tableau_2.interactive = true;
+      tableau_2.visible = false;
+
+      let tab2 = new PIXI.Sprite(PIXI.loader.resources["images/tableaux/tableau_2_recadr.png"].texture);
+      let barrow_2 = new PIXI.Sprite(PIXI.loader.resources["images/spritesheets/back_arrow.png"].texture);
+
+      barrow_2.interactive = true;
+      barrow_2.buttonMode = true;
+      barrow_2.x = 670 ;
+      barrow_2.y = 520 ;
+      barrow_2.width = 100;
+      barrow_2.height = 75;
+
+      tableau_2.addChild(tab2);
+      tableau_2.addChild(barrow_2);
+
+      function back2(){
+        tableau_2.visible = false;
+        main_gallery.visible = true;
+        player.x = 200;
+        player.y = 504;
+        player.alpha = 1;
+        player.rotation = 0;
+        player.scale.x = 1;
+        player.scale.y = 1;
+        cadres[1].scale.x = 0.7;
+        cadres[1].scale.y = 0.7;
+      }
+
+      barrow_2.on('click', function(event) {
+        back2();
+      });
+
+      /**************************** END Tableau 2 **************************************/
+
+      /***************************** Tableau 3 *************************************/
+
+      var tableau_3 = new PIXI.Container();
+      app.stage.addChild(tableau_3);
+
+      tableau_3.visible = false;
+      tableau_3.interactive = true;
+
+      let tab3 = new PIXI.Sprite(PIXI.loader.resources["images/tableaux/tableau_3_recadr.png"].texture);
+      let barrow_3 = new PIXI.Sprite(PIXI.loader.resources["images/spritesheets/back_arrow.png"].texture);
+
+      barrow_3.interactive = true;
+      barrow_3.buttonMode = true;
+      barrow_3.x = 670 ;
+      barrow_3.y = 520 ;
+      barrow_3.width = 100;
+      barrow_3.height = 75;
+
+      tableau_3.addChild(tab3);
+      tableau_3.addChild(barrow_3);
+
+      function back3(){
+        tableau_3.visible = false;
+        main_gallery.visible = true;
+        player.x = 200;
+        player.y = 504;
+        player.alpha = 1;
+        player.rotation = 0;
+        player.scale.x = 1;
+        player.scale.y = 1;
+        cadres[2].scale.x = 0.7;
+        cadres[2].scale.y = 0.7;
+      }
+
+      barrow_3.on('click', function(event) {
+        back3();
+      });
+
+      /***************************** END Tableau 3 *************************************/
+
+      /***************************** Tableau 4 *************************************/
+
+      var tableau_4 = new PIXI.Container();
+      app.stage.addChild(tableau_4);
+
+      tableau_4.visible = false;
+
+      let tab4 = new PIXI.Sprite(PIXI.loader.resources["images/tableaux/tableau_4_recadr.png"].texture);
+      let barrow_4 = new PIXI.Sprite(PIXI.loader.resources["images/spritesheets/back_arrow.png"].texture);
+
+      barrow_4.interactive = true;
+      barrow_4.buttonMode = true;
+      barrow_4.x = 670 ;
+      barrow_4.y = 520 ;
+      barrow_4.width = 100;
+      barrow_4.height = 75;
+
+      tableau_4.addChild(tab4);
+      tableau_4.addChild(barrow_4);
+
+      function back4(){
+        tableau_4.visible = false;
+        main_gallery.visible = true;
+        player.x = 200;
+        player.y = 504;
+        player.alpha = 1;
+        player.rotation = 0;
+        player.scale.x = 1;
+        player.scale.y = 1;
+        cadres[3].scale.x = 0.7;
+        cadres[3].scale.y = 0.7;
+      }
+
+      barrow_4.on('click', function(event) {
+        back4()
+      })
+
+      /***************************** END Tableau 4 *************************************/
+      /***************************** Tableau 5  *************************************/
+  
+  
+
+
+      var tableau_5 = new PIXI.Container();
+      app.stage.addChild(tableau_5);
+
+      tableau_5.visible = false;
+
+      let tab5 = new PIXI.Sprite(PIXI.loader.resources["images/tableaux/tableau_5_recadr.png"].texture);
+      let barrow_5 = new PIXI.Sprite(PIXI.loader.resources["images/spritesheets/back_arrow.png"].texture);
+
+      barrow_5.interactive = true;
+      barrow_5.buttonMode = true;
+      barrow_5.x = 670 ;
+      barrow_5.y = 520 ;
+      barrow_5.width = 100;
+      barrow_5.height = 75;
+
+      tableau_5.addChild(tab5);
+      tableau_5.addChild(barrow_5);
+
+      function back5(){
+        tableau_5.visible = false;
+        main_gallery.visible = true;
+        player.x = 200;
+        player.y = 504;
+        player.alpha = 1;
+        player.rotation = 0;
+        player.scale.x = 1;
+        player.scale.y = 1;
+        cadres[4].scale.x = 0.7;
+        cadres[4].scale.y = 0.7;
+      }
+
+      barrow_5.on('click', function(event) {
+        back5();
+      })
+
+      /***************************** END Tableau 5 *************************************/
+      /***************************** Tableau 6 *************************************/
+
+      var tableau_6 = new PIXI.Container();
+      app.stage.addChild(tableau_6);
+
+      tableau_6.visible = false;
+      tableau_6.interactive = true;
+
+      let tab6 = new PIXI.Sprite(PIXI.loader.resources["images/tableaux/tableau_6_recadr.png"].texture);
+      let barrow_6 = new PIXI.Sprite(PIXI.loader.resources["images/spritesheets/back_arrow.png"].texture);
+
+      barrow_6.interactive = true;
+      barrow_6.buttonMode = true;
+      barrow_6.x = 670 ;
+      barrow_6.y = 520 ;
+      barrow_6.width = 100;
+      barrow_6.height = 75;
+
+      tableau_6.addChild(tab6);
+      tableau_6.addChild(barrow_6);
+
+      function back6(){
+        tableau_6.visible = false;
+        main_gallery.visible = true;
+        player.x = 200;
+        player.y = 504;
+        player.alpha = 1;
+        player.rotation = 0;
+        player.scale.x = 1;
+        player.scale.y = 1;
+        cadres[5].scale.x = 0.7;
+        cadres[5].scale.y = 0.7;
+      }
+
+      barrow_6.on('click', function(event) {
+        back6();
+      })
+
+
+      /***************************** END Tableau 6 *************************************/
+
+      /***************************** Game Screen *************************************/
+
+      var end_game_screen = new PIXI.Container();
+      app.stage.addChild(end_game_screen);
+
+      end_game_screen.visible = false;
+      end_game_screen.interactive = true;
+
+      let end_game_background = new PIXI.Sprite(PIXI.loader.resources["images/tableauxPNG/EndGameScreen.png"].texture);
+
+      end_game_screen.addChild(end_game_background);
+
+
+      /***************************** END Game Screen *************************************/
+
+    }
+      
+  </script>
+ <script src="pixiscript.js"></script>
+ <script src="player_move.js"></script>
+ 
+</body>
+</html>
